@@ -1,0 +1,9 @@
+<program> ::= { <const> } <label> { <label> }
+<const>   ::= 'const' <ident> <int> ';'
+<label>   ::= <ident> ':' <instr> { <instr> }
+<instr>   ::= ( <mov> | <alu> | <imm> | <jump> | 'nop' ) ';'
+<mov>     ::= 'mov' ( <reg> | 'out' ) ',' <reg>
+<alu>     ::= 'nand' | 'or' | 'and' | 'nor' | 'add' | 'sub' | 'xor' | 'not'
+<imm>     ::= 'imm' ( <int> | <ident> )
+<jump>    ::= 'jmp' | 'jz' | 'jnz' | 'jl' | 'jge' | 'jle' | 'jg'
+<reg>     ::= 'A' | 'B' | 'C' | 'D' | 'E' | 'F'
