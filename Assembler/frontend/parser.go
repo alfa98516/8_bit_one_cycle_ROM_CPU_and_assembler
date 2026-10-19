@@ -5,14 +5,27 @@ import (
 	"os"
 	"slices"
 	"strconv"
+	"strings"
 
 	. "Assembler/common"
 )
 
+type Instr struct {
+	Op  TokenType // TtKwAdd, TtKwMov, TtKwJz, ...
+	Dst TokenType // TtKwA..TtKwF or TtKwOut (mov only)
+	Src TokenType // TtKwA..TtKwF (mov only)
+	Imm int
+	Ref string // non-empty for "imm <ident>", resolved after parsing
+	Pos Position
+}
+
 type Parser struct {
-	lexer LexerInterface
-	token Token
-	out   *os.File
+	lexer  LexerInterface
+	token  Token
+	out    *os.File
+	instrs []Instr
+	labels map[string]int
+	consts map[string]int
 }
 
 func (parser *Parser) oneOf(ttcheck TokenType, tts ...TokenType) bool {
@@ -69,6 +82,35 @@ func (parser *Parser) Program() {
 	}
 }
 
+func isReg(t TokenType) bool { return t >= TtKwA && t <= TtKwF }
+
+func (p *Parser) isInstrStart() bool {
+	t := p.token.Type
+	return t >= TtKwNand && t <= TtKwJg && t != TtKwConst
+}
+
+func (p *Parser) Label() {
+	name := strings.TrimSuffix(p.token.Lexeme, ":") // drop if the lexer already strips it
+	pos := p.token.Pos
+	p.match(TtLabel)
+
+	if _, dup := p.labels[name]; dup {
+		p.matchError(fmt.Sprintf("duplicate label '%s' at %s", name, pos))
+	}
+	p.labels[name] = len(p.instrs)
+
+	for p.isInstrStart() {
+		p.Instr()
+	}
+}
+
+func (p *Parser) reg() {
+	if !isReg(p.token.Type) {
+		p.matchError(fmt.Sprintf("expected register at %s, found '%s'", p.token.Pos, p.token.Type))
+	}
+	p.match(p.token.Type)
+}
+
 func (parser *Parser) Const() {
 	ident := parser.token.Lexeme
 	parser.match(TtIdent)
@@ -85,4 +127,37 @@ func (parser *Parser) Const() {
 	}
 	parser.match(TtSemi)
 	Const[ident] = i
+}
+
+func (parser *Parser) Instr() {
+	in := Instr{Op: parser.token.Type, Pos: parser.token.Pos}
+	parser.match(in.Op)
+
+	switch in.Op {
+	case TtKwMov:
+		in.Dst = parser.token.Type
+		if !parser.matchIf(TtKwOut) {
+			parser.reg()
+		}
+		parser.match(TtComma)
+		in.Src = parser.token.Type
+		parser.reg()
+	case TtKwImm:
+
+		parser.match(TtKwImm)
+
+		if parser.token.Type != TtInt {
+			in.Imm = Const[parser.token.Lexeme]
+			parser.match(TtIdent)
+		} else {
+			var err error
+			in.Imm, err = strconv.Atoi(parser.token.Lexeme)
+			if err != nil {
+				panic(err)
+			}
+			parser.match(TtInt)
+		}
+	}
+	parser.match(TtSemi)
+	parser.instrs = append(parser.instrs, in)
 }

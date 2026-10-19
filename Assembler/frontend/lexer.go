@@ -128,6 +128,10 @@ func (lexer *Lexer) NextToken() Token {
 			lexeme := lexer.identifier()
 			lexer.token = Token{Type: Lookup(lexeme), Lexeme: lexeme, Pos: ps}
 			lexer.nextRune()
+			if lexer.ch == ':' {
+				lexer.token.Type = TtLabel
+				lexer.nextRune()
+			}
 		} else if unicode.IsDigit(lexer.ch) {
 			lexer.token = lexer.integer(lexer.pos)
 		} else {
