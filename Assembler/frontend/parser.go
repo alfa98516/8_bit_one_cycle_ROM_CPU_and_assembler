@@ -2,7 +2,6 @@ package frontend
 
 import (
 	"fmt"
-	"os"
 	"slices"
 	"strconv"
 	"strings"
@@ -22,7 +21,6 @@ type Instr struct {
 type Parser struct {
 	lexer  LexerInterface
 	token  Token
-	out    *os.File
 	instrs []Instr
 	labels map[string]int
 	consts map[string]int
@@ -58,27 +56,20 @@ func (parser *Parser) Init(lex LexerInterface) {
 	parser.token = parser.lexer.NextToken()
 }
 
-func (parser *Parser) ParserSrc(src []byte, handler ErrorHandler, oPath string) {
+func (parser *Parser) ParserSrc(src []byte, handler ErrorHandler) {
 	var lex Lexer
 	lex.Init(src, handler)
 	parser.Init(&lex)
-	file, err := os.Create(oPath)
-	if err != nil {
-		panic(err)
-	}
-	parser.out = file
-
 	parser.Program()
 }
-
-var (
-	Labels map[string]int
-	Const  map[string]int
-)
 
 func (parser *Parser) Program() {
 	for parser.token.Type == TtKwConst {
 		parser.Const()
+	}
+	parser.Label()
+	for parser.token.Type != TtEOI {
+		parser.Label()
 	}
 }
 
@@ -126,7 +117,7 @@ func (parser *Parser) Const() {
 		parser.matchError(msg)
 	}
 	parser.match(TtSemi)
-	Const[ident] = i
+	parser.consts[ident] = i
 }
 
 func (parser *Parser) Instr() {
@@ -147,7 +138,7 @@ func (parser *Parser) Instr() {
 		parser.match(TtKwImm)
 
 		if parser.token.Type != TtInt {
-			in.Imm = Const[parser.token.Lexeme]
+			in.Imm = parser.consts[parser.token.Lexeme]
 			parser.match(TtIdent)
 		} else {
 			var err error
