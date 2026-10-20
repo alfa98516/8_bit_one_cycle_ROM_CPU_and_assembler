@@ -100,13 +100,13 @@ var tokenTypes = [...]string{
 	TtKwJge:   "jge",
 	TtKwJle:   "jle",
 	TtKwJg:    "jg",
-	TtKwOut:   "out",
 	TtKwA:     "A",
 	TtKwB:     "B",
 	TtKwC:     "C",
 	TtKwD:     "D",
 	TtKwE:     "E",
 	TtKwF:     "F",
+	TtKwOut:   "out",
 }
 
 var keywords map[string]TokenType
