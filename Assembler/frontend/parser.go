@@ -93,7 +93,7 @@ func isReg(t TokenType) bool { return t >= TtKwA && t <= TtKwF }
 // all mnemonics lie between TtKwNand and TtKwJg, except const.
 func (parser *Parser) isInstrStart() bool {
 	t := parser.token.Type
-	return t >= TtKwNand && t <= TtKwJg && t != TtKwConst
+	return t >= TtKwNand && t <= TtKwRet && t != TtKwConst
 }
 
 func (parser *Parser) Label() {
@@ -169,6 +169,7 @@ func (parser *Parser) Instr() {
 			in.Ref = parser.token.Lexeme // const or label, resolved later
 			parser.match(TtIdent)
 		}
+
 	}
 	parser.match(TtSemi)
 	parser.instrs = append(parser.instrs, in)

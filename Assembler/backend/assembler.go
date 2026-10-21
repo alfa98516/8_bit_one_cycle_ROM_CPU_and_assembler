@@ -36,7 +36,14 @@ var OpBits = map[TokenType]byte{
 	TtKwJge:  0b11_000_101,
 	TtKwJle:  0b11_000_110,
 	TtKwJg:   0b11_000_111,
+	TtKwPush: 0b011_00000,
+	TtKwPop:  0b011_00001,
+	TtKwCall: 0b011_00010,
+	TtKwRet:  0b011_00011,
 }
+
+0b000_00000
+0b01100_000
 
 const (
 	immBase = 0b00_000000

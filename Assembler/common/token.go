@@ -70,6 +70,10 @@ const (
 	TtKwD
 	TtKwE
 	TtKwF
+	TtKwPush
+	TtKwPop
+	TtKwCall
+	TtKwRet
 	endKeyword
 )
 
@@ -100,6 +104,10 @@ var tokenTypes = [...]string{
 	TtKwJge:   "jge",
 	TtKwJle:   "jle",
 	TtKwJg:    "jg",
+	TtKwPop:   "pop",
+	TtKwPush:  "push",
+	TtKwCall:  "call",
+	TtKwRet:   "ret",
 	TtKwA:     "A",
 	TtKwB:     "B",
 	TtKwC:     "C",
